@@ -1,78 +1,90 @@
 <template>
     <div class="container">
         <main>
-            <div class="brewery-select">
-                <label for="breweries">Choose a State:</label>
-                <select v-model="selectedState" id="breweries" name="cars">
-                    <option disabled selected value>Select option</option>
-                    <option v-for="(state, index) in states" :value="state" :key="index"> {{ state }}</option>
-                </select>
-                <!-- disable button if a state hasn't been selected -->
-                <button :disabled="!isDisabled" @click="getBreweries()">Show me breweries!</button>
-                <!-- show if brewery hasn't been selected -->
-                <p v-if="breweries.length === 0">Use dropdown to filter breweries by state.</p>
-            </div>
-            <div v-if="breweries" class="list-of-breweries">
+            <BreweriesSelect :breweries="breweries"  @getState="getState($event)"></BreweriesSelect>
+            <section :class=" isThereData ? 'list-of-breweries' : 'no-data'">
+                <p v-if="!isThereData"> Data not found, please try again with a different state</p>
                 <!-- looping through breweries -->
                 <div class="brewery-card" v-for="brewery in breweries" :key="brewery.id">
                     <h2>{{ brewery.name }}</h2>
                     <div class="line-break"></div>
                     <p>Located at {{ brewery.city}}</p>
-                    <!-- Show only if brewery's website is available -->
-                    <p v-if="brewery.website_url">Check it out at 
+                    <!-- Show if brewery's site is available -->
+                    <p v-if="brewery.website_url">Check out their website 
                         <a target="_blank" :href="brewery.website_url">here!</a>
                     </p>
+                    <p v-else>No website available</p>
                 </div>
-            </div>
+            </section>
         </main>
     </div>
 </template>
 
 <script>
 import axios from 'axios'
+import BreweriesSelect from './BreweriesSelect.vue'
 export default {
     name: 'Breweries',
+    components :{
+        BreweriesSelect
+    },
     data() {
         return {
             breweries: [],
-            states: [ 'Alabama', 'Alaska', 'Arizona', 'Arkansas', 'California', 'Colorado', 'Connecticut',
-                    'Delaware', 'Florida', 'Georgia', 'Hawaii', 'Idaho', 'Illinois', 'Indiana', 'Iowa', 'Kansas',
-                    'Kentucky', 'Louisiana', 'Maine', 'Maryland', 'Massachusetts', 'Michigan', 'Minnesota', 
-                    'Mississippi', 'Missouri', 'Montana', 'Nebraska', 'Nevada', 'New Hampshire', 'New Jersey', 
-                    'New Mexico', 'New York', 'North Carolina', 'North Dakota', 'Ohio', 'Oklahoma', 'Oregon',
-                    'Pennsylvania', 'Rhode Island', 'South Carolina', 'South Dakota', 'Tennessee', 'Texas', 'Utah', 
-                    'Vermont', 'Virginia', 'Washington', 'West Virginia', 'Wisconsin', 'Wyoming', 'WERE HERE!'],
-            selectedState: ''
+            isThereData: true
         }   
     },
-    computed: {
-        isDisabled() {
-        return this.selectedState !== ''
-        }
-    },
     methods : {
-        getBreweries: async function () {
-        await axios.get(`https://api.openbrewerydb.org/breweries?by_state=${this.selectedState}`).then((response) => {
+        getBreweries: async function (title) {
+        await axios.get(`https://api.openbrewerydb.org/breweries?by_state=${title}`).then((response) => {
             if(response && response.data) {
+                this.isThereData = true
                 this.breweries = response.data
-            }
+            } 
+            // fallback if no data is returned
+            if(!Object.keys(response.data).length){
+                this.isThereData = false
+            } 
         })
+        },
+        getState(title) {
+            //recivieing data from child component through payload (title), 
+            // calling getBreweries and passing value for api call
+            this.getBreweries(title)
         }
     }
 }
 </script>
 
 <style lang="scss">
+    .container{
+        max-width: 1400px;
+        margin: 0 auto;
+        main{
+            padding-bottom: 40px;
+        }
+    }
+
+    .no-data {
+        p {
+            font-size: 18px;
+            padding: 20px 10px 0;
+        }
+    }
+
     .list-of-breweries {
         display: grid;
         display: grid;
         grid-template-columns: repeat(3, minmax(10rem, 1fr));
         gap: 40px;
+        padding-top: 40px;
         .brewery-card {
             text-align: left;
             padding: 10px 30px;
             border: 2px solid #011f4b;
             border-radius: 9px;
+            height: 180px;
+            overflow-y: scroll;
             h2 {
                 margin-bottom: 0;
                 color: burlywood;
@@ -86,45 +98,6 @@ export default {
             a {
                 color: black;
             }
-        }
-    }
-
-    .container{
-        max-width: 1400px;
-        margin: 0 auto;
-        main{
-            padding-bottom: 40px;
-        }
-    }
-
-    .brewery-select {
-        margin-bottom: 30px;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        flex-direction: column;
-        button {
-            background-color: #005b96;
-            border: none;
-            color: white;
-            font-weight: 600;
-            border-radius: 3px;
-            padding: 8px 10px;
-            margin-top: 10px;
-            cursor: pointer;
-            font-size: 16px;
-            &:disabled{
-                border: 1px solid #999999;
-                background-color: #cccccc;
-                color: #666666;
-                pointer-events: auto;
-                cursor: not-allowed;
-            }
-        }
-        select{
-            width: 200px;
-            padding: 5px 10px;
-            border-radius: 5px;
         }
     }
 

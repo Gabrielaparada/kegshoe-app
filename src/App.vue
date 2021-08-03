@@ -1,19 +1,19 @@
 <template>
   <div id="app">
-    <header>
-      <h1>Brewery List</h1>
-    </header>
+    <Header></Header>
     <Breweries></Breweries>
   </div>
 </template>
 
 <script>
 import Breweries from './components/Breweries.vue'
+import Header from './components/Header.vue'
 
 export default {
   name: 'App',
   components: {
-    Breweries
+    Breweries,
+    Header
   }
 }
 </script>
