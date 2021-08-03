@@ -35,8 +35,8 @@ export default {
         }   
     },
     methods : {
-        getBreweries: async function (title) {
-        await axios.get(`https://api.openbrewerydb.org/breweries?by_state=${title}`).then((response) => {
+        getBreweries: async function (el) {
+        await axios.get(`https://api.openbrewerydb.org/breweries?by_state=${el}`).then((response) => {
             if(response && response.data) {
                 this.isThereData = true
                 this.breweries = response.data
@@ -47,10 +47,10 @@ export default {
             } 
         })
         },
-        getState(title) {
-            //recivieing data from child component through payload (title), 
-            // calling getBreweries and passing value for api call
-            this.getBreweries(title)
+        getState(state) {
+            //recivieing data from child component through payload (state), 
+            // calling getBreweries and passing value for api call to display list of breweries
+            this.getBreweries(state)
         }
     }
 }
